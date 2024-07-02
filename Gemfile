@@ -48,8 +48,16 @@ gem "sassc-rails"
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
-gem 'activeadmin'
+gem 'sassc-rails'
+gem 'pg'
 gem 'devise'
+gem 'activeadmin'
+gem 'ckeditor', git: 'https://github.com/galetahub/ckeditor.git'
+gem "mini_magick"
+gem "image_processing"
+gem 'activeadmin-searchable_select'
+gem 'active_admin_datetimepicker'
+gem 'pagy'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
