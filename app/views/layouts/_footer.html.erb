@@ -1,0 +1,204 @@
+<footer>
+  <div class="content">
+    <div class="module">
+      <div class="inline"><i class="fa-solid fa-share-from-square"></i><h2 id="share">Compartí este proyecto</h2></div>
+      <p>Si te fue útil o le puede ser útil a alguien más, tu ayuda en difusión hace una enorme diferencia. ¡Gracias!</p>
+      <% share_msg = "Mapa Verde nuclea toda la información de iniciativas de jóvenes que trabajan por el ambiente en Uruguay, conocelas y sumate." %>
+      <div class="inline">
+        <a class="dropdown-item" href="https://mastodonshare.com/?text=<%= share_msg %>&url=<%= request.base_url %>" target="_blank">
+          <i class="fa-brands fa-mastodon"></i>
+        </a>
+        <a class="dropdown-item" href="https://twitter.com/intent/tweet?text=<%= share_msg %>&amp;url=<%= request.base_url %>&amp;via=Mapa Verde" onclick="if(!document.getElementById('td_social_networks_buttons')){window.open(this.href, 'mywin','left=50,top=50,width=600,height=350,toolbar=0'); return false;}">
+          <i class="fa-brands fa-twitter"></i>
+        </a>
+        <a class="dropdown-item" href="https://www.facebook.com/sharer.php?u=<%= request.base_url %>" onclick="window.open(this.href, 'mywin','left=50,top=50,width=600,height=350,toolbar=0'); return false;">
+          <i class="fa-brands fa-facebook"></i>
+        </a>
+        <a class="dropdown-item" target="_blank" href="https://api.whatsapp.com/send?text=<%= share_msg %> <%= request.base_url %>">
+          <i class="fa-brands fa-whatsapp"></i>
+        </a>
+        <a class="dropdown-item" href="https://www.linkedin.com/sharing/share-offsite/?url=<%= request.base_url %>" onclick="window.open(this.href, 'mywin','left=50,top=50,width=600,height=350,toolbar=0'); return false;">
+          <i class="fa-brands fa-linkedin"></i>
+        </a>
+        <a class="dropdown-item" href="mailto:someone@example.com?Subject=Mapa Verde: Asitente de apelación&amp;body=<%= share_msg %> <%= request.base_url %>">
+          <i class="fa-solid fa-envelope"></i>
+        </a>
+      </div>
+    </div>
+    <div class="module">
+        <div class="group column">
+            <h2>Sobre el proyecto</h2>
+            <div id="info-group">
+                <p>
+                la plataforma de información y comunicación sobre la acción ambiental en Uruguay <b>“Mapa Verde”</b> es el resultado de un proceso de trabajo colaborativo de investigación y desarrollo, acompañado por instancias de formación en comunicación ambiental y espacios de vinculación entre jóvenes. 
+                </p>
+                <a href="/sobre-el-proyecto" id="more-info">Más información ></a>
+                <div class="inline">
+                    <a class="social-link"  href="https://github.com/datauy/" target="_blank">
+                      <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a class="social-link" href="https://github.com/datauy/" target="_blank">
+                      <i class="fa-brands fa-facebook"></i>
+                    </a>
+                    <a class="social-link" href="https://github.com/datauy/y" target="_blank">
+                      <i class="fa-brands fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+            <h2>Accesibilidad</h2>
+            <div id="info-group">
+                <p>
+                Este sitio web ha sido creado con estándares de accesibilidad web. Si encuentras algún problema de accesibilidad al utilizar la plataforma, o si tienes sugerencias sobre cómo podemos mejorar la accesibilidad, contáctanos. 
+                </p>
+            </div>
+        </div>
+        <div id="open-data" class="group">
+            <div id="open-title" class="toggle-data" onclick="this.parentNode.classList.toggle('active');">
+                <h2>Datos abiertos y software libre </h2>
+                <%= image_tag("arrow-down.png", alt:"Imagen cambiar") %>
+            </div>
+            <div class="toggle-content">
+              <p>
+                  Los datos utilizados en esta aplicación se encuentran disponibles para su reutilización como
+                  datos
+                  abiertos y el código del software es libre bajo licencia GPLv3.
+              </p>
+              <a href="https://catalogodatos.gub.uy/organization/data" class="support-button toggle-content" target="_blank">
+                  Datos abiertos en Catálogo Nacional
+                  <i class="fa-solid fa-database"></i>
+              </a>
+              <a href="https://github.com/datauy/" class="support-button toggle-content" target="_blank">
+                  Código de la aplicación en GitHub
+                  <i class="fa-brands fa-github"></i>
+              </a>
+            </div>
+        </div>
+        <div id="ask-frame">
+            <a href="http://soporte.data.org.uy/es/customer/create-ticket/" class="btn btn-transparent" target="_blank">
+                <%= image_tag("support.png", alt:"Imagen cambiar") %>
+                ¿Problemas, dudas?
+            </a>
+        </div>
+        <a class="support-button" href='mailto:soporte@data.org.uy' >Escribí a Soporte</a>
+    </div>
+    <div class="module" class="group column center">
+      <div id="we-are-header" class="toggle-data" onclick="this.parentNode.classList.toggle('active');">
+        <h2>¿Quiénes somos?</h2>  
+      </div>
+      <h3>Presenta:</h3>
+      <div class="logos-frame">
+        <a href="https://data.org.uy" target="_blank">
+          <%= image_tag("data.png", alt:"DATA Uruguay", class: "data-logo") %>
+        </a>
+        <a href="https://data.org.uy" target="_blank">
+          <%= image_tag("data.png", alt:"DATA Uruguay", class: "data-logo") %>
+        </a>
+      </div>
+      <h3>Impulsan:</h3>
+      <div class="logos-frame">
+        <a href="https://data.org.uy" target="_blank">
+          <%= image_tag("data.png", alt:"DATA Uruguay", class: "data-logo") %>
+        </a>
+        <a href="https://data.org.uy" target="_blank">
+          <%= image_tag("data.png", alt:"DATA Uruguay", class: "data-logo") %>
+        </a>
+        <a href="https://data.org.uy" target="_blank">
+          <%= image_tag("data.png", alt:"DATA Uruguay", class: "data-logo") %>
+        </a>
+      </div>
+      <h3>Colaboran:</h3>
+      <div class="logos-frame">
+        <a href="https://data.org.uy" target="_blank">
+          <%= image_tag("data.png", alt:"DATA Uruguay", class: "data-logo") %>
+        </a>
+        <a href="https://data.org.uy" target="_blank">
+          <%= image_tag("data.png", alt:"DATA Uruguay", class: "data-logo") %>
+        </a>
+      </div>        
+    </div>
+  </div>
+  <div class="group slider-container">
+    <h2>Conocé otros proyectos de DATA:</h2>
+    <div id="data-projects" class="slides"></div>
+    <div id="slider-controls"></div>
+  </div>
+  <script>
+    function toggleFooter(){
+        console.log("TOGGLE FOOTER");
+        $("#footer").toggleClass("expanded");
+      }
+      function goToSlide(clicked) {
+        var pos = clicked.target.xdata;
+        current_slides = $(".slide").length;
+        for (var i = pos; i < current_slides; i++) {
+          $(".slides").append( $("#slide-"+i) );
+        }
+        for (var i = 0; i < pos; i++) {
+          $(".slides").append( $("#slide-"+i) );
+        }
+        $("#slider-controls a").removeClass("active");
+        clicked.target.className = "active";
+      }
+      $.getJSON("http://admin.data.org.uy/api/project-footer", function(data){
+        console.log("DATA!!!", data);
+          var container = document.getElementById("data-projects");
+          var controls = document.getElementById("slider-controls");
+          i=0;
+          data.forEach(function(project){
+            var a = document.createElement("a");
+            a.target = "_blank";
+            a.id = "slide-"+i;
+            a.href = project.link;
+            a.alt = project.name;
+            a.className = "slide";
+            var element = document.createElement("img");
+            element.setAttribute("src", "/images/"+project.icon);
+            a.appendChild(element);
+            container.appendChild(a);
+            var b = document.createElement("a");
+            b.xdata = i;
+            b.id = "control-slide-"+i;
+            b.onclick=goToSlide;
+            controls.appendChild(b);
+            if ( i == 0 ) {
+              b.className = "active";
+            }
+            i++;
+          });
+      });
+      var animationSpeed = 500;
+      var pause = 3000;
+      setInterval(function() {
+        $(".slides > a:first").not(".hovered")
+          .fadeOut(animationSpeed, (e) => {
+            $(".slides > a:last").show();
+          })
+          .next()
+          .fadeIn(animationSpeed)
+          .end()
+          .appendTo(".slides");
+        //bottom controls
+        var slide = $(".slides > a:first");
+        $("#slider-controls a").removeClass("active");
+        $("#control-"+slide[0].id).addClass("active");
+      }, pause);
+      //Pause on hover
+      $(".slider-container").hover(
+        function(){
+          $(".slides a").addClass("hovered");
+        },
+        function(){
+          $(".slides a").removeClass("hovered");
+        }
+    );
+  </script>
+  <hr>
+  <div id="credits">
+      <%= image_tag("Shape.png", alt:"Imagen cambiar") %>
+      <%= image_tag("cc.png", alt:"Imagen cambiar") %>
+      <div class="group">
+          <p>El contenido original de este sitio, está bajo licencia Creative Commons Atribución 4.0
+              Internacional. Por otras atribuciones ver sobre el proyecto.</p>
+      </div>
+  </div>
+</footer>
