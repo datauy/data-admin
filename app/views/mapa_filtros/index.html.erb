@@ -1,0 +1,9 @@
+<div id="mapa-section"  data-controller="mapa-filters">
+  <%= render partial: 'map_filters' %>
+  <div id="map-wrapper">
+    <div id="orgs-list">
+      <% #turbo_frame_tag "orgs_list", src: search_url(format: :turbo_stream)%>
+    </div>
+    <div id="map" style="height: 500px;"></div>
+  </div>
+</div>

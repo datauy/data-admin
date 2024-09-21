@@ -7,4 +7,6 @@ Rails.application.routes.draw do
   root "static_pages#index"
 
   get "api/project-footer", to: "api#project_footer"
+  get "samples/mapa-filtros", to: "mapa_filtros#index"
+  get "samples/mapa-filtros-js", to: "mapa_filtros#filtros_js"
 end
