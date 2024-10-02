@@ -1,20 +1,18 @@
 <div class="backdrop"></div>
+<div id="filters">    
+  <div id="results" class="button"></div>
+  <button aria-label="Borrar filtros" onclick="clearFilters()" class="wrapper main-button">
+    <i class="fas fa-filter-circle-xmark"></i>
+    <span>Borrar filtros</span>
+  </button>
+</div>
 <div id="mapa-section">
-  <div id="map-wrapper">
-    <div id="filters">    
-        <button aria-expanded="false" aria-label="Borrar filtros" onclick="clearFilters()" class="wrapper">
-          <i class="fas fa-filter-circle-xmark"></i>
-          <span>Borrar filtros</span>
-        </button>
-      <div id="results" class="button"></div>
-    </div>
-    <div id="map" style="height: 500px;"></div>
-    <div id="no-results" style="display:none;">
-      <span>No hay resultados para los filtros seleccionados</span>
-      <i onclick="jQuery('#no-results').hide();" class="fa fa-close"></i>
-    </div>
-  </div>
   <div id="list"></div>
+  <div id="no-results" style="display:none;">
+    <span>No hay resultados para los filtros seleccionados</span>
+    <i onclick="jQuery('#no-results').hide();" class="fa fa-close"></i>
+  </div>
+  <div id="map" style="height: 500px;"></div>
 </div>
 <script>
 //Obtain data from the json file
@@ -40,7 +38,7 @@ const filters = {
   'search_res': {"type": 'text', "default_value": '', "field":[], "dom": 'search-res', "label": "Buscar...", "icon": "magnifying-glass", "filter": "search" },
   'ext': {"type": 'boolean', "default_value": false, "field":'extendido', "dom": 'extendido', "label": 'Horario extendido', "filter": "attribute"},
   'summ': {"type": 'boolean', "default_value": false, "field":'verano', "dom": 'verano', "label": 'Funciona en verano', "filter": "attribute"},
-  'age': {"type": 'integer', "default_value": "-1", "field": ['edad_mínima', 'edad_máxima'], "dom": "edad", "label": "Edad", "icon": "cake", "filter": "between"},
+  'age': {"type": 'integer', "default_value": "-1", "field": ['edad_mínima', 'edad_máxima'], "dom": "edad", "label": "Edad", "icon": "person", "filter": "between"},
   'obj': {"type": 'list', "default_value": [], "field": 'poblacion', "dom": 'objetivo', "values": [], "label": "Población objetivo", "icon": "building", "filter": "attribute"},
   'serv': {"type": 'list', "default_value": [], "field":'tipo_centro', "dom": 'servicio', "values": [], "label": "Tipo de servicio", "icon": "building", "filter": "include"},
 }
@@ -101,7 +99,7 @@ function clearFilters(initial = false) {
       case 'list':
         if (initial) {
           let buttonList = '<button aria-expanded="false" class="wrapper select-wrapper" onclick="toggleSearchSelect(\''+filters[key].dom+'\', this)" aria-label="'+filters[key].label+'">'
-          buttonList += '<div id="objetivo-trigger" class="select-filter"><img class="icon" src="/images/'+filters[key].icon+'.svg"/>'+filters[key].label+'</div>'
+          buttonList += '<img class="icon" src="/images/'+filters[key].icon+'.svg"/><div id="objetivo-trigger" class="select-filter">'+filters[key].label+'</div>'
           buttonList += '<ul id="'+filters[key].dom+'" class="select-options"></ul><i class="fas fa-chevron-down right"></i></button>'
           filters_dom.innerHTML = buttonList + filters_dom.innerHTML
         }
@@ -125,7 +123,7 @@ function clearFilters(initial = false) {
         break;
       default:
         if (initial) {
-          let input_field = '<div id="'+filters[key].dom+'-wrapper"><img class="icon" src="/images/'+filters[key].icon+'.svg"/>'
+          let input_field = '<div class="wrapper input-wrapper" id="'+filters[key].dom+'-wrapper"><img class="icon" src="/images/'+filters[key].icon+'.svg"/>'
           input_field += '<input type="text" id="'+filters[key].dom+'" name="'+filters[key].dom+'" placeholder="'+filters[key].label+'" onkeyup="handleText(this, \''+key+'\');"></input></div>'
           filters_dom.innerHTML = input_field + filters_dom.innerHTML
         }
@@ -274,10 +272,44 @@ function reloadFilters() {
 
 function render_filter_tags() {
   console.log(active_filters);
-  Object.keys(active_filters).forEach( indx => {
-    console.log(indx, active_filters[indx]);
-  });
-  
+  for (let key in active_filters) {
+    switch (filters[key].filter) {
+      case 'attribute':
+        if ( filters[key].type == 'list' ) {
+          if ( active_filters[key].length > 0 ) {
+            for(let pos in active_filters[key]) {
+              add_search_tag(filters[key].values[pos], key, pos)
+            }
+          }
+        }
+        else {
+          if ( active_filters[key] ) {
+            add_search_tag(filters[key].label, key, -1)
+          }
+        }
+        break;
+      case 'include':
+        if ( active_filters[key].length > 0 ) {
+          console.log("TAGS for include", filters[key]);
+          
+        }
+        break;
+      case 'between':
+        if ( active_filters[key] >= 0 ) {
+          add_search_tag(filters[key].label+': '+active_filters[key], key, -1)
+        }
+        break;
+      case 'search':
+        if ( active_filters[key] != '' ) {
+          if ( Object.values(element).join(" ").toLowerCase().search(active_filters[key].toLowerCase()) === -1 ) {
+            include = false;
+            return;
+          }
+        }
+      default:
+        break;
+    }
+  }
 }
 //Single element html
 function elementListHtml(element, i) {
