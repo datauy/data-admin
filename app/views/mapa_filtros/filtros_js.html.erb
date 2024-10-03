@@ -6,6 +6,7 @@
     <span>Borrar filtros</span>
   </button>
 </div>
+<div id="filter-tags"></div>
 <div id="mapa-section">
   <div id="list"></div>
   <div id="no-results" style="display:none;">
@@ -163,8 +164,6 @@ function handleText(input, key){
 }
 //Filter by option
 function toggleOption(key, id) {
-  console.log("TOGGLE OPTION", document.getElementById(filters[key].dom));
-  
   var index = active_filters[key].indexOf(id);
   if ( index !== -1 ) {
     active_filters[key].splice(index, 1);
@@ -271,13 +270,15 @@ function reloadFilters() {
 }
 
 function render_filter_tags() {
-  console.log(active_filters);
+  document.getElementById("filter-tags").innerHTML = ''
   for (let key in active_filters) {
     switch (filters[key].filter) {
       case 'attribute':
+      case 'include':
         if ( filters[key].type == 'list' ) {
           if ( active_filters[key].length > 0 ) {
-            for(let pos in active_filters[key]) {
+            for(let afPos in active_filters[key]) {
+              let pos = active_filters[key][afPos]
               add_search_tag(filters[key].values[pos], key, pos)
             }
           }
@@ -288,12 +289,6 @@ function render_filter_tags() {
           }
         }
         break;
-      case 'include':
-        if ( active_filters[key].length > 0 ) {
-          console.log("TAGS for include", filters[key]);
-          
-        }
-        break;
       case 'between':
         if ( active_filters[key] >= 0 ) {
           add_search_tag(filters[key].label+': '+active_filters[key], key, -1)
@@ -301,15 +296,45 @@ function render_filter_tags() {
         break;
       case 'search':
         if ( active_filters[key] != '' ) {
-          if ( Object.values(element).join(" ").toLowerCase().search(active_filters[key].toLowerCase()) === -1 ) {
-            include = false;
-            return;
-          }
+          add_search_tag('Búsqueda: '+active_filters[key], key, -1)
         }
       default:
         break;
     }
   }
+}
+function add_search_tag(label, key, pos) {
+  let tag = '<div class="tag"><span>'+label+'</span><button onclick="remove_search_tag(this, \''+key+'\', \''+pos+'\')">X</button>' 
+  document.getElementById("filter-tags").innerHTML += tag
+}
+
+function remove_search_tag(elem, key, pos) {
+  if ( pos != -1 ) {
+    console.log("REMOVE FROM KEY "+key,pos, active_filters[key]);
+    let arr_pos = active_filters[key].indexOf(parseInt(pos))
+    console.log("REMOVE ARR POS:", arr_pos);
+    if ( arr_pos !== -1 ) {
+      active_filters[key].splice(arr_pos, 1)
+    }
+  }
+  else {
+    active_filters[key] = filters[key].default_value
+  }
+  switch (filters[key].filter) {
+    case 'attribute':
+      case 'include':
+        if ( filters[key].type == 'list' ) {
+          document.getElementById(filters[key].dom+'-option-'+pos).classList.remove("active");
+      }
+      else {
+        document.getElementById(filters[key].dom).value = filters[key].default_value
+      }
+      break;
+    default:
+      document.getElementById(filters[key].dom).value = filters[key].default_value
+      break
+  }
+  reloadFilters()
 }
 //Single element html
 function elementListHtml(element, i) {

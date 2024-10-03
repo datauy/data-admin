@@ -60,6 +60,29 @@ ul {
     left: 16px;
   }
 }
+#filter-tags {
+  display: flex;
+  gap: 10px;
+  .tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #0F57FB;
+    color: white;
+    border-radius: 1000px;
+    padding: 4px 8px;
+    font-size: 10px;
+    line-height: 16px;
+    button {
+      padding: 0;
+      border: none;
+      color: white;
+      font-size: 9px;
+      font-weight: 900;
+    }
+  }
+}
 #filters {
   z-index: 402;
   display: flex;
