@@ -1,6 +1,18 @@
 # DATA Admin
 Esta plataforma en RoR es creada para la administración central de los proyectos de DATA. Su cometido es la distribución de información entre los proyectos, a la vez que centralice los componentes de desarrollo transversales de la organización. Ésto se logra a través de la incorporación de entidades (como los proyectos de DATA) y sus relaciones mediante ActiveAdmin, suministradas a terceros a través de una API.  
   
+# Instalación
+- `git clone https://github.com/datauy/data-admin.git`
+- Crear base de datos
+- Modificar config/database.yml
+- `bundle install`
+- `EDITOR="vim" rails credentials:edit` 
+- `rails db:migrate`  
+- `./bin/importmap pin leaflet`  
+- `./bin/importmap pin wicket`  
+- `rails assets:precompile`  
+
+# Versiones
 ## Versión 1.0  
 La primera versión de la herramienta contiene 3 componentes:  
 - Distribución de proyectos de DATA  
