@@ -34,21 +34,23 @@ xhr.onreadystatechange = function () {
 }*/
 const mapBounds = [];
 var currentList = [];
-var min_max_age = [];
+var autocomplete = [];
 const filters = {
   'search_res': {"type": 'text', "default_value": '', "field":[], "dom": 'search-res', "label": "Buscar...", "icon": "magnifying-glass", "filter": "search" },
   'ext': {"type": 'boolean', "default_value": false, "field":'extendido', "dom": 'extendido', "label": 'Horario extendido', "filter": "attribute"},
   'summ': {"type": 'boolean', "default_value": false, "field":'verano', "dom": 'verano', "label": 'Funciona en verano', "filter": "attribute"},
   'age': {"type": 'integer', "default_value": "-1", "field": ['edad_mínima', 'edad_máxima'], "dom": "edad", "label": "Edad", "icon": "person", "filter": "between"},
   'obj': {"type": 'list', "default_value": [], "field": 'poblacion', "dom": 'objetivo', "values": [], "label": "Población objetivo", "icon": "building", "filter": "attribute"},
-  'serv': {"type": 'list', "default_value": [], "field":'tipo_centro', "dom": 'servicio', "values": [], "label": "Tipo de servicio", "icon": "building", "filter": "include"},
+  'serv': {"type": 'autocomplete', "default_value": [], "field":'tipo_centro', "dom": 'servicio', "values": [], "label": "Tipo de servicio", "icon": "building", "filter": "include", "placeholder": "Servicio"},
 }
-function filters_type($type) {
+function filters_type(ftypes) {
+  console.log("FILTER TYPES", ftypes);
+  
   var result = [];
   for (var key in filters) {
     // skip loop if the property is from prototype
     if (!filters.hasOwnProperty(key)) continue;
-    if ( filters[key]['type'] == $type ) {
+    if ( ftypes.includes(filters[key]['type']) ) {
       filters[key].key = key
       result.push(filters[key]);
     }
@@ -63,18 +65,36 @@ fetch(url.href, {
 })
 .then(r => r.text())
 .then(html => {
-  console.log("GETTING DATA: ", html);
   window.data = JSON.parse(html)
   //clear filters, render elements and fill filter lists
   clearFilters(true);
   window.total = data.length;
   //Add filters
-  filters_type('list').forEach( filter_list => {
+  filters_type(['list']).forEach( filter_list => {
     var serv_options_dom = document.getElementById(filter_list.dom);
     for (var i = 0; i < filter_list.values.length; i++){
       serv_options_dom.innerHTML += '<li class="option '+filter_list.dom+'-option" id="'+filter_list.dom+'-option-'+i+'" onclick="toggleOption(\''+filter_list.key+'\', '+i+', this)">'+filter_list.values[i]+'</li>';
     }
   });
+  filters_type(['autocomplete']).forEach( filter_list => {
+    var serv_options_dom = document.getElementById(filter_list.dom);
+    for (var i = 0; i < filter_list.values.length; i++){
+      serv_options_dom.innerHTML += '<option value="'+filter_list.values[i]+'" id="'+filter_list.dom+'-option-'+i+'" >'+filter_list.values[i]+'</option>';
+    }
+    console.log("CREATE SLIM", );
+    
+    let slim = new SlimSelect({
+      select: '#'+filter_list.dom,   // this.element is the <select> tag
+      showSearch: true,       // show search field
+      settings: {
+        placeholderText: filter_list.label,
+        searchPlaceholder: filter_list.placeholder,
+        allowDeselect: true   // allow deselecting (x) option
+      }
+    })
+
+    autocomplete.push(slim)
+  })
 })
 //window.elements = data;
 
@@ -110,6 +130,17 @@ function clearFilters(initial = false) {
             for ( const option of options ) {
               option.classList.remove('active');
             }
+          }
+        }
+        break;
+      case 'autocomplete':
+        if (initial) {
+          let slist = '<select onchange="handleAuto(\''+key+'\');" id="'+filters[key].dom+'" multiple></select>'
+          filters_dom.innerHTML = slist + filters_dom.innerHTML
+        }
+        else {
+          for (let slim of autocomplete) {
+            slim.setSelected()
           }
         }
         break;
@@ -149,6 +180,21 @@ function toggleSearchSelect(elem_id, button) {
 }
 
 //Add listeners
+function handleAuto(key){
+  let options = document.getElementById(filters[key].dom).options; 
+  res = []
+  console.log("AUTO", active_filters[key]);
+  i = 0
+  for (let option of options ) {
+    if ( option.selected ) {
+      console.log("ALGO", option);
+      res.push(i)
+    }
+    i++
+  }
+  active_filters[key] = res
+  reloadFilters();
+}
 function handleCheckbox(checkbox, key){
   if( checkbox.checked == true ) {
     active_filters[key] = true;
@@ -201,14 +247,15 @@ function clickPin(pin) {
 
 //FILTER
 function reloadFilters() {
-  console.log("RELOAD FILTERS", active_filters);
   result = [];
+  console.log("RELOAD", active_filters);
+  
   window.data.forEach((element, i) => {
     var include = true;
     for ( var key in filters ) {
       switch (filters[key].filter) {
         case 'attribute':
-          if ( filters[key].type == 'list' ) {
+          if ( filters[key].type == 'list' || filters[key].type == 'autocomplete' ) {
             if ( active_filters[key].length > 0 ) {
               let match = false;
               active_filters[key].
@@ -275,17 +322,19 @@ function render_filter_tags() {
     switch (filters[key].filter) {
       case 'attribute':
       case 'include':
-        if ( filters[key].type == 'list' ) {
-          if ( active_filters[key].length > 0 ) {
-            for(let afPos in active_filters[key]) {
-              let pos = active_filters[key][afPos]
-              add_search_tag(filters[key].values[pos], key, pos)
+        if ( filters[key].type != 'autocomplete' ) {
+          if ( filters[key].type == 'list' ) {
+            if ( active_filters[key].length > 0 ) {
+              for(let afPos in active_filters[key]) {
+                let pos = active_filters[key][afPos]
+                add_search_tag(filters[key].values[pos], key, pos)
+              }
             }
           }
-        }
-        else {
-          if ( active_filters[key] ) {
-            add_search_tag(filters[key].label, key, -1)
+          else {
+            if ( active_filters[key] ) {
+              add_search_tag(filters[key].label, key, -1)
+            }
           }
         }
         break;
@@ -310,9 +359,7 @@ function add_search_tag(label, key, pos) {
 
 function remove_search_tag(elem, key, pos) {
   if ( pos != -1 ) {
-    console.log("REMOVE FROM KEY "+key,pos, active_filters[key]);
     let arr_pos = active_filters[key].indexOf(parseInt(pos))
-    console.log("REMOVE ARR POS:", arr_pos);
     if ( arr_pos !== -1 ) {
       active_filters[key].splice(arr_pos, 1)
     }
@@ -325,11 +372,12 @@ function remove_search_tag(elem, key, pos) {
       case 'include':
         if ( filters[key].type == 'list' ) {
           document.getElementById(filters[key].dom+'-option-'+pos).classList.remove("active");
-      }
-      else {
-        document.getElementById(filters[key].dom).value = filters[key].default_value
-      }
-      break;
+        }
+        else {
+          if ( filters[key].type == 'autocomplete' )
+          document.getElementById(filters[key].dom).value = filters[key].default_value
+        }
+        break;
     default:
       document.getElementById(filters[key].dom).value = filters[key].default_value
       break
@@ -412,7 +460,7 @@ function elementListHtml(element, i) {
        mapBounds.push([element.lat, element.lng]);
        //Load filters lists if initial load
        if ( initial ) {
-        filters_type('list').forEach( filter_list => {
+        filters_type(['list', 'autocomplete']).forEach( filter_list => {
           if ( !filter_list.values.includes(element[filter_list.field]) ) {
             filter_list.values.push(element[filter_list.field]);
           }
