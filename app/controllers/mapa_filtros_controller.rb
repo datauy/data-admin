@@ -5,4 +5,7 @@ class MapaFiltrosController < ApplicationController
   def filtros_js
 
   end
+  def filtros_traducciones
+
+  end
 end
