@@ -34,6 +34,7 @@ h2 {
   	line-height: 22px;
   	font-weight: 600;
   	color: var(--grises-gris-02);
+    margin: 0 0 4px 0;
 }
 button {
   display: flex;
@@ -49,6 +50,18 @@ button {
   cursor: pointer;
   i {
     color: #878787;
+  }
+  &.expand {
+    line-height: 14px;
+    font-weight: 600;
+    color: var(--principales-azul-data);
+    min-width: fit-content;
+    border: none;
+  }
+  &.print {
+    display: none;
+    color: var(--principales-azul-data);
+    border: 2px solid var(--principales-azul-data);
   }
 }
 a {
@@ -245,10 +258,6 @@ ul {
         background-color: var(--grises-gris-06);
         border: none;
         .srv-header {
-          h2::after {
-            content: 'Cerrar';
-            text-align: right;
-          }
           i {
             rotate: 90deg;
             translate: 0 2px;
@@ -261,6 +270,9 @@ ul {
           }
           .row {
             width: calc(100% - 80px);
+          }
+          .print {
+            display: flex;
           }
         }
         .srv-body {
@@ -281,6 +293,7 @@ ul {
         font-family: var(--button-link);
         color: var(--principales-azul-data);
         text-align: left;
+        margin: 0 0 8px 0;
       }
       .srv-header {
         display: flex;
@@ -290,6 +303,7 @@ ul {
         gap: 10px;
         background: none;
         border: none;
+        justify-content: space-between;
         i {
           margin-left: auto;
         }
@@ -299,6 +313,9 @@ ul {
         .sub-header {
           display: none;
           margin: 10px 0 0 0;
+        }
+        .title-left {
+          display: flex;
         }
       }
       .srv-body {
