@@ -50,12 +50,12 @@ var currentList = [];
 var autocomplete = {};
 const filters = {
   'year': {"type": 'inbetween', "default_value": {}, "field": 'Año de publicacion', "dom": {"year_min": "Período desde", 'year_max': "Hasta"}, "icon": "calendar", "filter": "inbetween", 'parent_dom': "filters-right-2"},
-  'city': {"type": 'autocomplete', "default_value": [], "field":'Ciudad de publicación', "dom": 'city', "values": [], "label": 'Ciudad', "icon": "location-dot", "filter": "include", 'parent_dom': "filters-right-1"},
+  'city': {"type": 'autocomplete', "default_value": [], "field":'Ciudad de publicación', "dom": 'city', "values": [], "label": 'Ciudad', "icon": "location", "filter": "include", 'parent_dom': "filters-right-1"},
   'ente': {"type": 'autocomplete', "default_value": [], "field":'Ente editor', "dom": 'ente', "values": [], "label": 'Ente editor', "icon": "building", "filter": "include", 'parent_dom': "filters-right-1"},
-  'lengua': {"type": 'autocomplete', "default_value": [], "field":'Lengua fuente', "dom": 'lengua', "values": [], "label": 'Lengua fuente', "icon": "building", "filter": "include", 'parent_dom': "filters-right-1"},
+  'lengua': {"type": 'autocomplete', "default_value": [], "field":'Lengua fuente', "dom": 'lengua', "values": [], "label": 'Lengua fuente', "icon": "lengua", "filter": "include", 'parent_dom': "filters-right-1"},
   'trans': {"type": 'autocomplete', "default_value": [], "field": "Traductor/a", "dom": "tans", "values": [], "label": "Traductor/a", "icon": "person", "filter": "include", 'parent_dom': "filters-right-1"},
-  'tit': {"type": 'autocomplete', "default_value": [], "field": 'titulo', "dom": 'titulo', "values": [], "label": "Título", "icon": "building", "filter": "include", 'parent_dom': "filters-right-1"},
-  'aut': {"type": 'autocomplete', "default_value": [], "field":'aut_principal', "dom": 'aut', "values": [], "label": "Autor/a", "icon": "building", "filter": "include", "placeholder": "Autor/a", 'parent_dom': "filters-right-1"},
+  'tit': {"type": 'autocomplete', "default_value": [], "field": 'titulo', "dom": 'titulo', "values": [], "label": "Título", "icon": "title", "filter": "include", 'parent_dom': "filters-right-1"},
+  'aut': {"type": 'autocomplete', "default_value": [], "field":'aut_principal', "dom": 'aut', "values": [], "label": "Autor/a", "icon": "book-person", "filter": "include", "placeholder": "Autor/a", 'parent_dom': "filters-right-1"},
   'search_res': {"type": 'text', "default_value": '', "field":[], "dom": 'search-res', "label": "Buscar por autor/a, traductor/a, título, ISBN, VIAF u otros términos", "icon": "magnifying-glass", "filter": "search", 'parent_dom': "filters-left" },
 }
 function filters_type(ftypes) {
@@ -91,11 +91,10 @@ fetch(url.href, {
   skipEmptyLines: true,
   })
   window.data = data_obj.data
-  console.log("DATA CSV:", window.data);
+  window.total = window.data.length;
   
   //clear filters, render elements and fill filter lists
   clearFilters(false, true);
-  window.total = data.length;
   //Add filter options
   filters_type(['list']).forEach( filter_list => {
     var serv_options_dom = document.getElementById(filter_list.dom);
@@ -156,7 +155,7 @@ function clearFilters(flag, initial = false) {
         break;
       case 'autocomplete':
         if (initial) {
-          let slist = '<div class="wrapper"><i class="fas fa-'+filters[key].icon+'"></i><select onchange="handleAuto(\''+key+'\');" id="'+filters[key].dom+'" multiple></select></div>'
+          let slist = '<div class="wrapper"><img class="icon" src="/images/'+filters[key].icon+'.svg"/></i><select onchange="handleAuto(\''+key+'\');" id="'+filters[key].dom+'" multiple></select></div>'
           filters_dom.innerHTML = slist + filters_dom.innerHTML
         }
         else {
@@ -182,7 +181,7 @@ function clearFilters(flag, initial = false) {
               filters_dom.innerHTML = input_field + filters_dom.innerHTML
           }
           else {
-            document.getElementById(filters[key].dom).value = filters[key].default_value;
+            document.getElementById(filters[key].dom[dom]).value = filters[key].default_value;
           }
         });
         break;
@@ -470,7 +469,7 @@ function filter(field, fvalue) {
   }
 }
  function get_style(element) {
-   var res = {color: '#15BE5A', icon: 'person'};
+   var res = {color: '#0F57FB', icon: 'chevron-right'};
     return res;
  }
  function renderElements(elements, initial = false) {
