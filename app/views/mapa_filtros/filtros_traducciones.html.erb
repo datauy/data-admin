@@ -49,12 +49,12 @@ var clearFlag = false;
 var currentList = [];
 var autocomplete = {};
 const filters = {
-  'year': {"type": 'inbetween', "default_value": {}, "field": 'Año de publicacion', "dom": {"year_min": "Período desde", 'year_max': "Hasta"}, "icon": "calendar", "filter": "inbetween", 'parent_dom': "filters-right-2"},
+  'year': {"type": 'inbetween', "default_value": {}, "field": 'Año de publicacion', "dom": {'year_max': "Hasta", "year_min": "Período desde"}, "icon": "calendar", "filter": "inbetween", 'parent_dom': "filters-right-2"},
   'city': {"type": 'autocomplete', "default_value": [], "field":'Ciudad de publicación', "dom": 'city', "values": [], "label": 'Ciudad', "icon": "location", "filter": "include", 'parent_dom': "filters-right-1"},
   'ente': {"type": 'autocomplete', "default_value": [], "field":'Ente editor', "dom": 'ente', "values": [], "label": 'Ente editor', "icon": "building", "filter": "include", 'parent_dom': "filters-right-1"},
   'lengua': {"type": 'autocomplete', "default_value": [], "field":'Lengua fuente', "dom": 'lengua', "values": [], "label": 'Lengua fuente', "icon": "lengua", "filter": "include", 'parent_dom': "filters-right-1"},
-  'trans': {"type": 'autocomplete', "default_value": [], "field": "Traductor/a", "dom": "tans", "values": [], "label": "Traductor/a", "icon": "person", "filter": "include", 'parent_dom': "filters-right-1"},
-  'tit': {"type": 'autocomplete', "default_value": [], "field": 'titulo', "dom": 'titulo', "values": [], "label": "Título", "icon": "title", "filter": "include", 'parent_dom': "filters-right-1"},
+  'trans': {"type": 'autocomplete', "default_value": [], "field": "Traductor/a", "dom": "trans", "values": [], "label": "Traductor/a", "icon": "person", "filter": "include", 'parent_dom': "filters-right-1"},
+  'titulo': {"type": 'autocomplete', "default_value": [], "field": 'titulo', "dom": 'titulo', "values": [], "label": "Título", "icon": "title", "filter": "include", 'parent_dom': "filters-right-1"},
   'aut': {"type": 'autocomplete', "default_value": [], "field":'aut_principal', "dom": 'aut', "values": [], "label": "Autor/a", "icon": "book-person", "filter": "include", "placeholder": "Autor/a", 'parent_dom': "filters-right-1"},
   'search_res': {"type": 'text', "default_value": '', "field":[], "dom": 'search-res', "label": "Buscar por autor/a, traductor/a, título, ISBN, VIAF u otros términos", "icon": "magnifying-glass", "filter": "search", 'parent_dom': "filters-left" },
 }
@@ -131,7 +131,6 @@ function clearFilters(flag, initial = false) {
   }
   let i = 0
   for (var key in filters) {
-    console.log("FILTER: ", filters[key])
     filters_dom = document.getElementById(filters[key].parent_dom)
     // skip loop if the property is from prototype
     if (!filters.hasOwnProperty(key)) continue;
@@ -176,8 +175,8 @@ function clearFilters(flag, initial = false) {
       case 'inbetween':
         Object.keys(filters[key].dom).forEach(dom => {
           if (initial) {
-              let input_field = '<div class="wrapper input-wrapper" id="'+dom+'-wrapper">'
-              input_field += '<input type="date" id="'+dom+'" name="'+dom+'" placeholder="'+filters[key].dom[dom]+'" onchange="handleInBetween(this, \''+key+'\',  \''+dom+'\');"></input></div>'
+              let input_field = '<div class="wrapper input-wrapper" id="'+dom+'-wrapper"><img class="icon" src="/images/'+filters[key].icon+'.svg"/>'
+              input_field += '<input type="text" onfocus="document.activeElement.type = \'date\'" onfocusout="this.type = \'text\'" class="date" id="'+dom+'" name="'+dom+'" placeholder="'+filters[key].dom[dom]+'" onchange="handleInBetween(this, \''+key+'\',  \''+dom+'\');"></input></div>'
               filters_dom.innerHTML = input_field + filters_dom.innerHTML
           }
           else {
@@ -214,6 +213,8 @@ function toggleSearchSelect(elem_id, button) {
 
 //Add listeners
 function handleAuto(key){
+  //console.log('CLEARRRRRRR', clearFlag);
+  
   if ( !clearFlag ) {
     let options = document.getElementById(filters[key].dom).options; 
     res = []
@@ -221,7 +222,6 @@ function handleAuto(key){
     i = 0
     for (let option of options ) {
       if ( option.selected ) {
-        console.log("ALGO", option);
         res.push(i)
       }
       i++
@@ -274,16 +274,17 @@ function toggleOption(key, id) {
 // show description
 function toggleDesc(id) {
   var srv = jQuery('#srv-'+id);
-  jQuery('.srv').removeClass('active');
   if ( srv.hasClass('active') ) {
+    jQuery('.srv').removeClass('active');
     document.querySelector('#srv-'+id+' .expand').ariaExpanded = false
     document.querySelector('#srv-'+id+' .expand span').textContent = 'Ver más'
   }
   else {
+    jQuery('.srv').removeClass('active');
     var position = jQuery('#srv-'+id).offset().top - jQuery('#srv-0').offset().top;
     jQuery("#list").animate({
       scrollTop: position
-    }, 1000, 'linear' );
+    }, 500, 'linear' );
     //document.getElementById('srv-'+id).scrollIntoView({behavior: 'smooth'});
     srv.addClass("active");
     document.querySelector('#srv-'+id+' .expand').ariaExpanded = true
@@ -364,13 +365,28 @@ function reloadFilters() {
       }
     }
     if (include) {
+      //reload lists
       result.push(element);
     }
   });
  render_filter_tags();
- renderElements(result);
+ renderElements(result, true);
+ //setAutocompleteLists();
 }
 
+function setAutocompleteLists() {
+  clearFlag = true;
+  for (let field of Object.keys(autocomplete)) {
+    let filist = []
+    console.log("AUTOCOMPLETE DE ", field);
+    filters[field].values.forEach(x => {
+      filist.push({'text': x, 'value': x })
+    });
+    console.log("FILIST DE ", filist);
+    autocomplete[field].setData(filist)
+  }
+  clearFlag = false;
+}
 function render_filter_tags() {
   document.getElementById("filter-tags").innerHTML = ''
   for (let key in active_filters) {
@@ -445,10 +461,14 @@ function elementListHtml(element, i) {
   return '<li onclick="toggleDesc('+ i +')" class="srv" id="srv-'+ i +'">\
       <div class="srv-header">\
         <div class="title">\
-          <h2>'+element.titulo+'</h2><h3><a onclick="filter(\'aut\', \''+element.aut_principal+'\')">'+element.aut_principal+'</a></h3>\
+          <div class="title-head"><h2>'+element.titulo+'</h2><h3><a onclick="filter(\'aut\', \''+element.aut_principal+'\')">'+element.aut_principal+'</a></h3></div>\
+          <div class="title-details">\
+            <a class="tag" href="'+element['viaf']+'" target="_blank"><i class="fas fa-external-link"></i>VIAF:'+element['viaf'].split('/').slice(-1)[0]+'</a>\
+            <a class="tag" href="'+element['ISBN']+'" target="_blank"><i class="fas fa-external-link"></i>ISBN:'+element['ISBN']+'</a>\
+          </div>\
         </div>\
         <div class="title-left">\
-          <button class="print"><img style="color: '+style.color+'" src="/images/print.svg"></img><span>Imprimir</span></button>\
+          <button class="print" onclick="printDiv(\'srv-'+i+'\',\''+element.titulo+'\')"><img style="color: '+style.color+'" src="/images/print.svg"></img><span>Imprimir</span></button>\
           <button class="expand" aria-controls="srv-'+ i +'" aria-expanded="false"><span>Ver más</span><i style="color: '+style.color+'" class="fas fa-'+style.icon+'"></i></button>\
         </div>\
       </div>\
@@ -458,7 +478,7 @@ function elementListHtml(element, i) {
           <a class="tag" onclick="filter(\'ente\', \''+element["Ente editor"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Ente editor"]+'</a>\
           <a class="tag" onclick="filter(\'city\', \''+element["Ciudad de publicación"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Ciudad de publicación"]+'</a></div>\
         <div class="row"><i class="fas fa-calendar"></i><span>Año de publicación: </span>'+element["Año de publicación"]+'</div>\
-        <div class="row"><i class="fas fa-user"></i><span>Traductor/a: </span><a class="tag" onclick="filter(\'city\', \''+element["Traductor/a"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Traductor/a"]+'</a></div>\
+        <div class="row"><i class="fas fa-user"></i><span>Traductor/a: </span><a class="tag" onclick="filter(\'trans\', \''+element["Traductor/a"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Traductor/a"]+'</a></div>\
         <div class="row"><i class="fas fa-comment"></i><span>Observaciones: </span>'+element.Observaciones+'</div>\
   </li>';
 }
@@ -478,33 +498,50 @@ function filter(field, fvalue) {
       break;
   }
 }
- function get_style(element) {
-   var res = {color: '#0F57FB', icon: 'chevron-right'};
+  function get_style(element) {
+    var res = {color: '#0F57FB', icon: 'chevron-right'};
     return res;
- }
- function renderElements(elements, initial = false) {
+  }
+  function renderElements(elements, initial = false) {
    //Generate markers for all data rows |element = data[0]
    if ( elements.length > 0 ) {
-     jQuery('#no-results').hide();
-     currentList = elements;
-     var list = '<ul>';
-     elements.forEach((element, i) => {
-       list += elementListHtml(element, i);
-       //Load filters lists if initial load
-       if ( initial ) {
-        filters_type(['list', 'autocomplete']).forEach( filter_list => {
+      jQuery('#no-results').hide();
+      currentList = elements;
+      var list = '<ul>';
+      let filter_lists = filters_type(['list', 'autocomplete'])
+      //filters_type(['list', 'autocomplete']).forEach( filter_list => {
+      //  filter_list.values = []
+      //});
+      elements.forEach((element, i) => {
+        list += elementListHtml(element, i);
+        //Load filters lists if initial load
+        if ( initial ) {
+        filter_lists.forEach( filter_list => {
           if ( !filter_list.values.includes(element[filter_list.field]) ) {
             filter_list.values.push(element[filter_list.field]);
           }
         });
-       }
-     });
-     list += '</ul>';
-     document.getElementById("list").innerHTML = list;
-     document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" autores";
-   }
-   else {
-     jQuery('#no-results').show();
-   }
- }
+        }
+      });
+      list += '</ul>';
+      document.getElementById("list").innerHTML = list;
+      document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" autores";
+    }
+    else {
+      jQuery('#no-results').show();
+    }
+  }
+  function printDiv(id, title) {
+    
+    var divToPrint=document.getElementById(id);
+
+    var newWin=window.open();
+    newWin.document.open();
+    newWin.document.write('<html><head><style>button{display:none;}</style><title>'+title+'</title></head><body>'+divToPrint.innerHTML+'</body></html>');
+    newWin.document.close();
+    newWin.focus();
+    newWin.print();
+    newWin.close();
+    setTimeout(function(){newWin.close();},10);
+  }
 </script>
