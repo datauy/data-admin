@@ -21,8 +21,12 @@
 </div>
 <div id="mapa-section">
   <div id="list"></div>
-  <div id="no-results" style="display:none;">
-    <span>No hay resultados para los filtros seleccionados</span>
+  <div id="no-results">
+    <i class="fa fa-circle-exclamation"></i>
+    <div>
+      <b>No hay resultados para los filtros seleccionados</b>
+      <span>Modificar selección o <a onclick="clearFilters(true)">borrar filtros</a></span>
+    </div>
     <i onclick="document.getElementById('no-results').style.display = 'none';" class="fa fa-close"></i>
   </div>
 </div>
@@ -180,7 +184,7 @@ function clearFilters(flag, initial = false) {
               filters_dom.innerHTML = input_field + filters_dom.innerHTML
           }
           else {
-            document.getElementById(dom).value = filters[key].default_value;
+            document.getElementById(dom).value = '';
           }
         });
         break;

@@ -9,13 +9,16 @@
   
   /* font sizes */
   --button-link-size: 12px;
+  --body-text-small-strong-size: 14px;
   --body-text-xsmall-size: 12px;
   --body-text-xsmall-strong-size: 12px;
   --body-text-general-size: 16px;
   --body-text-general-strong-size: 16px;
   --body-xxsmall-size: 10px;
-  
+  --font-size-base: 16px;
   /* Colors */
+  --feedback-error-light: #fff5f5;
+  --feedback-error-dark: #f63b3b;
   --grises-blanco: #fff;
   --grises-gris-01: #1f1f1f;
   --grises-gris-02: #2C2C2C;
@@ -291,6 +294,45 @@ ul {
       font-family: var(--body-text-general);
       color: #000;
       text-align: center;  
+  }
+}
+#no-results {
+  position: relative;
+  z-index: 410;
+  border-radius: 8px;
+  background-color: var(--feedback-error-light);
+  border: 1px solid var(--feedback-error-dark);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 16px;
+  gap: 16px;
+  text-align: center;
+  font-size: var(--font-size-base);
+  color: var(--feedback-error-dark);
+  width: fit-content;
+  margin: auto;
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    span {
+      color: #2C2C2C;
+      a {
+        text-decoration: underline;
+        color: #004D8A;
+      }
+    }
+  }
+  i.fas-close {
+    position: absolute;
+    right: 16px;
+  }
+  i.fas-circle-exclamation {
+    position: absolute;
+    left: 16px;
   }
 }
 
