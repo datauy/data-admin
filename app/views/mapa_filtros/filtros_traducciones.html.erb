@@ -557,6 +557,8 @@ function filter(field, fvalue) {
       document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" autores";
     }
     else {
+      document.getElementById("list").innerHTML = '';
+      document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" autores";
       noresults.style.display = 'flex'
     }
     loading.style.display = "none"
