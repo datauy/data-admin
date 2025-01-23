@@ -104,6 +104,23 @@ ul {
     }
   }
 }
+#loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.6);
+  z-index: 10;
+  padding: 30px;
+  img {
+    margin: calc(50vh - 30px) calc(50vw - 30px);
+    width: 60px;
+  }
+}
+.hidden {
+  display: none !important;
+}
 .wrapper {
   position: relative;
   &.input-wrapper img {

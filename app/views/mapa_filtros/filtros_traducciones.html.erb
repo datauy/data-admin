@@ -1,4 +1,4 @@
-<div class="backdrop"></div>
+<div id="loading"><img src="/images/loading.svg" alt="Cargando"/></div>
 <div id="filters">
   <div id="filters-right">
     <div id="filters-right-1"></div>
@@ -21,7 +21,7 @@
 </div>
 <div id="mapa-section">
   <div id="list"></div>
-  <div id="no-results">
+  <div id="no-results" style="display:none;">
     <i class="fa fa-circle-exclamation"></i>
     <div>
       <b>No hay resultados para los filtros seleccionados</b>
@@ -52,8 +52,11 @@ xhr.onreadystatechange = function () {
 var clearFlag = false;
 var currentList = [];
 var autocomplete = {};
+var loading = document.getElementById("loading");
+var noresults = document.getElementById("no-results");
+
 const filters = {
-  'year': {"type": 'inbetween', "default_value": {}, "field": 'Año de publicacion', "dom": {'year_max': "Hasta", "year_min": "Período desde"}, "icon": "calendar", "filter": "inbetween", 'parent_dom': "filters-right-2"},
+  'year': {"type": 'inbetween', "default_value": {}, "field": 'Año de publicación', "dom": {'year_max': "Hasta", "year_min": "Período desde"}, "icon": "calendar", "filter": "inbetween", 'parent_dom': "filters-right-2"},
   'city': {"type": 'autocomplete', "default_value": [], "field":'Ciudad de publicación', "dom": 'city', "values": [], "label": 'Ciudad', "icon": "location", "filter": "include", 'parent_dom': "filters-right-1"},
   'ente': {"type": 'autocomplete', "default_value": [], "field":'Ente editor', "dom": 'ente', "values": [], "label": 'Ente editor', "icon": "building", "filter": "include", 'parent_dom': "filters-right-1"},
   'lengua': {"type": 'autocomplete', "default_value": [], "field":'Lengua fuente', "dom": 'lengua', "values": [], "label": 'Lengua fuente', "icon": "lengua", "filter": "include", 'parent_dom': "filters-right-1"},
@@ -111,8 +114,6 @@ fetch(url.href, {
     for (var i = 0; i < filter_list.values.length; i++){
       serv_options_dom.innerHTML += '<option value="'+filter_list.values[i]+'" id="'+filter_list.dom+'-option-'+i+'" >'+filter_list.values[i]+'</option>';
     }
-    console.log("CREATE SLIM", );
-    
     let slim = new SlimSelect({
       select: '#'+filter_list.dom,   // this.element is the <select> tag
       showSearch: true,       // show search field
@@ -133,6 +134,7 @@ function clearFilters(flag, initial = false) {
   if (flag) {
     clearFlag = true;
   }
+  loading.style.display = "block"
   let i = 0
   for (var key in filters) {
     filters_dom = document.getElementById(filters[key].parent_dom)
@@ -180,7 +182,7 @@ function clearFilters(flag, initial = false) {
         Object.keys(filters[key].dom).forEach(dom => {
           if (initial) {
               let input_field = '<div class="wrapper input-wrapper" id="'+dom+'-wrapper"><img class="icon" src="/images/'+filters[key].icon+'.svg"/>'
-              input_field += '<input type="text" onfocus="document.activeElement.type = \'date\'" onfocusout="this.type = \'text\'" class="date" id="'+dom+'" name="'+dom+'" placeholder="'+filters[key].dom[dom]+'" onchange="handleInBetween(this, \''+key+'\',  \''+dom+'\');"></input></div>'
+              input_field += '<input type="text" class="date" id="'+dom+'" name="'+dom+'" placeholder="'+filters[key].dom[dom]+'" onchange="handleInBetween(\''+key+'\',  \''+dom+'\');"></input></div>'
               filters_dom.innerHTML = input_field + filters_dom.innerHTML
           }
           else {
@@ -191,7 +193,7 @@ function clearFilters(flag, initial = false) {
       default:
         if (initial) {
           let input_field = '<div class="wrapper input-wrapper" id="'+filters[key].dom+'-wrapper"><img class="icon" src="/images/'+filters[key].icon+'.svg"/>'
-          input_field += '<input type="text" id="'+filters[key].dom+'" name="'+filters[key].dom+'" placeholder="'+filters[key].label+'" onkeyup="handleText(this, \''+key+'\');"></input></div>'
+          input_field += '<input type="text" id="'+filters[key].dom+'" name="'+filters[key].dom+'" placeholder="'+filters[key].label+'" onkeyup="handleText(\''+key+'\');"></input></div>'
           filters_dom.innerHTML = input_field + filters_dom.innerHTML
         }
         else {
@@ -245,17 +247,15 @@ function handleCheckbox(checkbox, key){
       reloadFilters();
   }
 }
-function handleText(input, key){
+function handleText(key){
   if ( !clearFlag ) {
-    active_filters[key] = jQuery('#'+filters[key].dom).val();
+    active_filters[key] = document.getElementById(filters[key].dom).value;
     reloadFilters();
   }
 }
-function handleInBetween(input, key, field){
-  console.log("INBETWEEN",field);
-  
+function handleInBetween(key, field){
   if ( !clearFlag ) {
-    active_filters[key][field] = jQuery('#'+field).val();
+    active_filters[key][field] = document.getElementById(field).value;
     reloadFilters();
   }
 }
@@ -300,8 +300,7 @@ function toggleDesc(id) {
 //FILTER
 function reloadFilters() {
   result = [];
-  console.log("RELOAD", active_filters);
-  
+  loading.style.display = "block"
   window.data.forEach((element, i) => {
     var include = true;
     for ( var key in filters ) {
@@ -350,8 +349,15 @@ function reloadFilters() {
           }
           break;
         case 'inbetween':
-          if ( active_filters[key] >= 0 ) {
-            if ( element[filters[key].field] > active_filters[key][filters[key].dom[0]] || active_filters[key][filters[key].dom[1]] > element[filters[key].field] ) {
+          let doms = Object.keys(filters[key].dom)
+          if ( active_filters[key][doms[0]] > 0 && active_filters[key][doms[0]] != '' ) {
+            if ( element[filters[key].field] > active_filters[key][doms[0]] ) {
+              include = false;
+              return;
+            }
+          }
+          if ( active_filters[key][doms[1]] > 0 && active_filters[key][doms[1]] != '' ) {
+            if ( active_filters[key][doms[1]] > element[filters[key].field] ) {
               include = false;
               return;
             }
@@ -418,6 +424,15 @@ function render_filter_tags() {
           add_search_tag(filters[key].label+': '+active_filters[key], key, -1)
         }
         break;
+      case 'inbetween':
+        let doms = Object.keys(filters[key].dom)
+        if ( active_filters[key][doms[0]] > 0 ) {
+          add_search_tag(filters[key].dom[doms[0]]+': '+active_filters[key][doms[0]], key, doms[0])
+        }
+        if (active_filters[key][doms[1]] > 0 ) {
+          add_search_tag(filters[key].dom[doms[1]]+': '+active_filters[key][doms[1]], key, doms[1])
+        }
+        break;
       case 'search':
         if ( active_filters[key] != '' ) {
           add_search_tag('Búsqueda: '+active_filters[key], key, -1)
@@ -428,31 +443,39 @@ function render_filter_tags() {
   }
 }
 function add_search_tag(label, key, pos) {
-  let tag = '<div class="tag"><span>'+label+'</span><button onclick="remove_search_tag(this, \''+key+'\', \''+pos+'\')">X</button>' 
+  let tag = '<div class="tag"><span>'+label+'</span><button onclick="remove_search_tag(\''+key+'\', \''+pos+'\')">X</button>' 
   document.getElementById("filter-tags").innerHTML += tag
 }
 
-function remove_search_tag(elem, key, pos) {
-  if ( pos != -1 ) {
-    let arr_pos = active_filters[key].indexOf(parseInt(pos))
-    if ( arr_pos !== -1 ) {
-      active_filters[key].splice(arr_pos, 1)
-    }
+function remove_search_tag(key, pos) {
+  if ( isNaN(pos) ) {
+    active_filters[key][pos] = ''//filters[key].default_value
   }
   else {
-    active_filters[key] = filters[key].default_value
+    if ( pos != -1 ) {
+      let arr_pos = active_filters[key].indexOf(parseInt(pos))
+      if ( arr_pos !== -1 ) {
+        active_filters[key].splice(arr_pos, 1)
+      }
+    }
+    else {
+      active_filters[key] = filters[key].default_value
+    }
   }
   switch (filters[key].filter) {
     case 'attribute':
-      case 'include':
-        if ( filters[key].type == 'list' ) {
-          document.getElementById(filters[key].dom+'-option-'+pos).classList.remove("active");
-        }
-        else {
-          if ( filters[key].type == 'autocomplete' )
-          document.getElementById(filters[key].dom).value = filters[key].default_value
-        }
-        break;
+    case 'include':
+      if ( filters[key].type == 'list' ) {
+        document.getElementById(filters[key].dom+'-option-'+pos).classList.remove("active");
+      }
+      else {
+        if ( filters[key].type == 'autocomplete' )
+        document.getElementById(filters[key].dom).value = filters[key].default_value
+      }
+      break;
+    case 'inbetween':
+      document.getElementById(pos).value = ''//filters[key].default_value
+      break;
     default:
       document.getElementById(filters[key].dom).value = filters[key].default_value
       break
@@ -508,8 +531,10 @@ function filter(field, fvalue) {
   }
   function renderElements(elements, initial = false) {
    //Generate markers for all data rows |element = data[0]
+   console.log("RENDER", elements.length);
+   
    if ( elements.length > 0 ) {
-      jQuery('#no-results').hide();
+      noresults.style.display = 'none'
       currentList = elements;
       var list = '<ul>';
       let filter_lists = filters_type(['list', 'autocomplete'])
@@ -532,8 +557,9 @@ function filter(field, fvalue) {
       document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" autores";
     }
     else {
-      jQuery('#no-results').show();
+      noresults.style.display = 'flex'
     }
+    loading.style.display = "none"
   }
   function printDiv(id, title) {
     
