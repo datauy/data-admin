@@ -7,6 +7,7 @@
   <div id="filters-left">
     <div class="wrapper">
       <div id="results" class="button"></div>
+      <button class="print" onclick="exportSearch()" style="display: flex"><img src="/images/file-export-solid.svg"></img><span>Descargar resultados</span></button>
       <button aria-label="Borrar filtros" onclick="clearFilters(true)" class="wrapper main-button large">
         <i class="fas fa-filter-circle-xmark"></i>
         <span>Borrar filtros</span>
@@ -55,11 +56,42 @@ var autocomplete = {};
 var loading = document.getElementById("loading");
 var noresults = document.getElementById("no-results");
 
+const langs = {
+  'akk': 'Akkadiano',
+  'ara': 'Árabe',
+  'ben': 'Bengali',
+  'cat': 'Catalán',
+  'chi': 'Chino',
+  'cze': 'Checo',
+  'dut': 'Neerlandés',
+  'eng': 'Inglés',
+  'fre': 'Francés',
+  'ger': 'Alemán',
+  'glg': 'Gallego',
+  'gre': 'Griego',
+  'heb': 'Hebreo',
+  'hun': 'Húngaro',
+  'ice': 'Islandés',
+  'ita': 'Italiano',
+  'jpn': 'Japonés',
+  'kor': 'Koreano',
+  'lat': 'Latín',
+  'nor': 'Noruego',
+  'per': 'Farsi',
+  'pol': 'Polaco',
+  'por': 'Portugués',
+  'que': 'Quechua',
+  'rus': 'Ruso',
+  'san': 'Sánscrito',
+  'swe': 'Sueco',
+  'tur': 'Turco',
+  'yid': 'Yiddish'
+}
 const filters = {
   'year': {"type": 'inbetween', "default_value": {}, "field": 'Año de publicación', "dom": {'year_max': "Hasta", "year_min": "Período desde"}, "icon": "calendar", "filter": "inbetween", 'parent_dom': "filters-right-2"},
   'city': {"type": 'autocomplete', "default_value": [], "field":'Ciudad de publicación', "dom": 'city', "values": [], "label": 'Ciudad', "icon": "location", "filter": "include", 'parent_dom': "filters-right-1"},
   'ente': {"type": 'autocomplete', "default_value": [], "field":'Ente editor', "dom": 'ente', "values": [], "label": 'Ente editor', "icon": "building", "filter": "include", 'parent_dom': "filters-right-1"},
-  'lengua': {"type": 'autocomplete', "default_value": [], "field":'Lengua fuente', "dom": 'lengua', "values": [], "label": 'Lengua fuente', "icon": "lengua", "filter": "include", 'parent_dom': "filters-right-1"},
+  'lengua': {"type": 'autocomplete', "default_value": [], "field":'Lengua', "dom": 'lengua', "values": [], "label": 'Lengua fuente', "icon": "lengua", "filter": "include", 'parent_dom': "filters-right-1"},
   'trans': {"type": 'autocomplete', "default_value": [], "field": "Traductor/a", "dom": "trans", "values": [], "label": "Traductor/a", "icon": "person", "filter": "include", 'parent_dom': "filters-right-1"},
   'titulo': {"type": 'autocomplete', "default_value": [], "field": 'titulo', "dom": 'titulo', "values": [], "label": "Título", "icon": "title", "filter": "include", 'parent_dom': "filters-right-1"},
   'aut': {"type": 'autocomplete', "default_value": [], "field":'aut_principal', "dom": 'aut', "values": [], "label": "Autor/a", "icon": "book-person", "filter": "include", "placeholder": "Autor/a", 'parent_dom': "filters-right-1"},
@@ -109,11 +141,22 @@ fetch(url.href, {
       serv_options_dom.innerHTML += '<li class="option '+filter_list.dom+'-option" id="'+filter_list.dom+'-option-'+i+'" onclick="toggleOption(\''+filter_list.key+'\', '+i+', this)">'+filter_list.values[i]+'</li>';
     }
   });
+  clearFlag = true
   filters_type(['autocomplete']).forEach( filter_list => {
-    var serv_options_dom = document.getElementById(filter_list.dom);
+    //var serv_options_dom = document.getElementById(filter_list.dom);
+    let vals = []
     for (var i = 0; i < filter_list.values.length; i++){
-      serv_options_dom.innerHTML += '<option value="'+filter_list.values[i]+'" id="'+filter_list.dom+'-option-'+i+'" >'+filter_list.values[i]+'</option>';
+
+      let elems = filter_list.values[i].toString().split("|")
+      elems.forEach(ele => {
+        if ( !vals.find(o => o.text === ele ) ) {
+          vals.push({'text': ele})
+        }
+        
+      });
+      //serv_options_dom.innerHTML += '<option value="'+filter_list.values[i]+'" id="'+filter_list.dom+'-option-'+i+'" >'+filter_list.values[i]+'</option>';
     }
+    vals.sort((a, b) => a['text'] > b['text'])
     let slim = new SlimSelect({
       select: '#'+filter_list.dom,   // this.element is the <select> tag
       showSearch: true,       // show search field
@@ -121,11 +164,13 @@ fetch(url.href, {
         placeholderText: filter_list.label,
         searchPlaceholder: filter_list.placeholder,
         allowDeselect: true   // allow deselecting (x) option
-      }
+      },
+      data: vals
     })
 
     autocomplete[filter_list.dom] = slim
   })
+  clearFlag = false
 })
 //window.elements = data;
 //FUNCTIONS
@@ -220,19 +265,8 @@ function toggleSearchSelect(elem_id, button) {
 //Add listeners
 function handleAuto(key){
   //console.log('CLEARRRRRRR', clearFlag);
-  
   if ( !clearFlag ) {
-    let options = document.getElementById(filters[key].dom).options; 
-    res = []
-    console.log("AUTO", key);
-    i = 0
-    for (let option of options ) {
-      if ( option.selected ) {
-        res.push(i)
-      }
-      i++
-    }
-    active_filters[key] = res
+    active_filters[key] = autocomplete[key].getSelected()
     reloadFilters();
   }
 }
@@ -293,7 +327,6 @@ function toggleDesc(id) {
     srv.addClass("active");
     document.querySelector('#srv-'+id+' .expand').ariaExpanded = true
     document.querySelector('#srv-'+id+' .expand span').textContent = 'Cerrar'
-    //map.flyTo( [currentList[id].lat, currentList[id].lng], 18);
   }
 }
 
@@ -334,10 +367,16 @@ function reloadFilters() {
           break;
         case 'include':
           if ( active_filters[key].length > 0 ) {
-            if ( !active_filters[key].map( x => filters[key].values[x]).includes(element[filters[key].field]) ) {
-              include = false;
-              return;
-            }
+            include = false
+            let vals = element[filters[key].field].toString().split('|')
+            console.log(vals);
+            
+            vals.forEach(ele => {
+              ele.trim()
+              if ( active_filters[key].includes(ele) ) {
+                include = true;
+              }
+            });
           }
           break;
         case 'between':
@@ -500,16 +539,16 @@ function elementListHtml(element, i) {
         </div>\
       </div>\
       <div class="srv-body">\
-        <div class="row"><i class="fas fa-language"></i><span>Lengua fuente: </span><a class="tag" onclick="filter(\'lengua\', \''+element["Lengua fuente"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Lengua fuente"]+'</a></div>\
-        <div class="row"><i class="fas fa-building"></i><span>Ente editor: </span>\
-          <a class="tag" onclick="filter(\'ente\', \''+element["Ente editor"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Ente editor"]+'</a>\
-          <a class="tag" onclick="filter(\'city\', \''+element["Ciudad de publicación"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Ciudad de publicación"]+'</a></div>\
+        <div class="row"><i class="fas fa-language"></i><span>Lengua fuente: </span><a class="tag" onclick="filter(\'lengua\', \''+element["Lengua"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Lengua"]+'</a></div>\
+        <div class="row"><i class="fas fa-building"></i><span>Ente editor: </span><a class="tag" onclick="filter(\'ente\', \''+element["Ente editor"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Ente editor"]+'</a></div>\
+        <div class="row"><i class="fas fa-location-dot"></i><span>Ciudad: </span><a class="tag" onclick="filter(\'city\', \''+element["Ciudad de publicación"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Ciudad de publicación"]+'</a></div>\
         <div class="row"><i class="fas fa-calendar"></i><span>Año de publicación: </span>'+element["Año de publicación"]+'</div>\
         <div class="row"><i class="fas fa-user"></i><span>Traductor/a: </span><a class="tag" onclick="filter(\'trans\', \''+element["Traductor/a"]+'\')"><i class="fas fa-magnifying-glass"></i>'+element["Traductor/a"]+'</a></div>\
         <div class="row"><i class="fas fa-comment"></i><span>Observaciones: </span>'+element.Observaciones+'</div>\
   </li>';
 }
 function filter(field, fvalue) {
+  clearFilters(true)
   switch (filters[field].type) {
     case 'list':
       break;
@@ -541,7 +580,7 @@ function filter(field, fvalue) {
       //filters_type(['list', 'autocomplete']).forEach( filter_list => {
       //  filter_list.values = []
       //});
-      elements.forEach((element, i) => {
+      elements.sort((a, b) => a['Año de publicación'] - b['Año de publicación']).forEach((element, i) => {
         list += elementListHtml(element, i);
         //Load filters lists if initial load
         if ( initial ) {
@@ -554,11 +593,11 @@ function filter(field, fvalue) {
       });
       list += '</ul>';
       document.getElementById("list").innerHTML = list;
-      document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" autores";
+      document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" entradas";
     }
     else {
       document.getElementById("list").innerHTML = '';
-      document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" autores";
+      document.getElementById("results").innerHTML = "Mostrando "+elements.length+"/"+window.total+" entradas";
       noresults.style.display = 'flex'
     }
     loading.style.display = "none"
@@ -575,5 +614,16 @@ function filter(field, fvalue) {
     newWin.print();
     newWin.close();
     setTimeout(function(){newWin.close();},10);
+  }
+  function exportSearch() {
+    let result = Object.keys(currentList[0]).join(',')+'\n'
+    currentList.forEach(line => {
+      console.log(line);
+      result += '"'+Object.values(line).join('","')+'"\n'
+    });
+    const blob = new Blob([result], { type: 'text/csv;charset=utf-8,' })
+    const objUrl = URL.createObjectURL(blob)
+    var newWin=window.open(objUrl);
+    //setTimeout(function(){newWin.close();},10);
   }
 </script>
