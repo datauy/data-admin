@@ -1,20 +1,26 @@
 <div id="loading"><img src="/images/loading.svg" alt="Cargando"/></div>
 <div id="filters">
-  <div id="filters-right">
+  <div id="filters-right" class="mobile-hide">
+    <button onclick="toggleRightFilters()" class="close-right">
+      <svg viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"></path></svg>
+    </button>
     <div id="filters-right-1"></div>
     <div id="filters-right-2"></div>
   </div>
   <div id="filters-left">
+    <div class="wrapper input-wrapper" id="search-res-wrapper">
+      <img class="icon" src="/images/magnifying-glass.svg"/>
+      <input type="text" id="search-res" name="search-res" placeholder="Buscar por autor/a, traductor/a, título, ISBN, VIAF u otros términos" onkeyup="handleText('search_res');"></input>
+      <button aria-label="Filtros" onclick="toggleRightFilters()" class="wrapper button small" alt="Filtros">
+        <i class="fas fa-filter"></i>
+      </button>
+    </div>
     <div class="wrapper">
       <div id="results" class="button"></div>
       <button class="print" onclick="exportSearch()" style="display: flex"><img src="/images/file-export-solid.svg"></img><span>Descargar resultados</span></button>
       <button aria-label="Borrar filtros" onclick="clearFilters(true)" class="wrapper main-button large">
         <i class="fas fa-filter-circle-xmark"></i>
         <span>Borrar filtros</span>
-      </button>
-      <button aria-label="Filtros" onclick="showFilters(true)" class="wrapper button small">
-        <i class="fas fa-filter-circle"></i>
-        <span>Filtros</span>
       </button>
     </div>
     <div id="filter-tags"></div>
@@ -156,7 +162,8 @@ fetch(url.href, {
       });
       //serv_options_dom.innerHTML += '<option value="'+filter_list.values[i]+'" id="'+filter_list.dom+'-option-'+i+'" >'+filter_list.values[i]+'</option>';
     }
-    vals.sort((a, b) => a['text'] > b['text'])
+    vals.sort((a, b) => a['text'].localeCompare(b['text'], 'es', {'sensitivity': 'accent'}))
+    vals.push({text: "No hay datos"})
     let slim = new SlimSelect({
       select: '#'+filter_list.dom,   // this.element is the <select> tag
       showSearch: true,       // show search field
@@ -174,6 +181,11 @@ fetch(url.href, {
 })
 //window.elements = data;
 //FUNCTIONS
+function toggleRightFilters() {
+  console.log("TOGGLE RIGHT", document.getElementById('filters-right'));
+  
+  document.getElementById('filters-right').classList.toggle('mobile-hide');
+}
 //Clear filters and load initial
 function clearFilters(flag, initial = false) {
   if (flag) {
@@ -236,14 +248,7 @@ function clearFilters(flag, initial = false) {
         });
         break;
       default:
-        if (initial) {
-          let input_field = '<div class="wrapper input-wrapper" id="'+filters[key].dom+'-wrapper"><img class="icon" src="/images/'+filters[key].icon+'.svg"/>'
-          input_field += '<input type="text" id="'+filters[key].dom+'" name="'+filters[key].dom+'" placeholder="'+filters[key].label+'" onkeyup="handleText(\''+key+'\');"></input></div>'
-          filters_dom.innerHTML = input_field + filters_dom.innerHTML
-        }
-        else {
-          document.getElementById(filters[key].dom).value = filters[key].default_value;
-        }
+        document.getElementById(filters[key].dom).value = filters[key].default_value;
         break;
     }
     active_filters[key] = filters[key].default_value
@@ -404,10 +409,14 @@ function reloadFilters() {
           break;
         case 'search':
           if ( active_filters[key] != '' ) {
-            if ( Object.values(element).join(" ").toLowerCase().search(active_filters[key].toLowerCase()) === -1 ) {
-              include = false;
-              return;
-            }
+            include = false;
+            let str = Object.values(element).join(" ").toLowerCase()
+            active_filters[key].toLowerCase().split(' ').forEach(word => {
+              if ( str.search(word) !== -1 ) {
+                include = true;
+                return;
+              }
+            });
           }
         default:
           break;
