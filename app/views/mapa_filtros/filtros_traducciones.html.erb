@@ -182,8 +182,6 @@ fetch(url.href, {
 //window.elements = data;
 //FUNCTIONS
 function toggleRightFilters() {
-  console.log("TOGGLE RIGHT", document.getElementById('filters-right'));
-  
   document.getElementById('filters-right').classList.toggle('mobile-hide');
 }
 //Clear filters and load initial
@@ -536,7 +534,7 @@ function elementListHtml(element, i) {
   return '<li onclick="toggleDesc('+ i +')" class="srv" id="srv-'+ i +'">\
       <div class="srv-header">\
         <div class="title">\
-          <div class="title-head"><h2>'+element.titulo+'</h2><h3><a onclick="filter(\'aut\', \''+element.aut_principal+'\')">'+element.aut_principal+'</a></h3></div>\
+          <div class="title-head"><h3><a onclick="filter(\'aut\', \''+element.aut_principal+'\')">'+element.aut_principal+'</a></h3><h2>'+element.titulo+'</h2></div>\
           <div class="title-details">\
             <a class="tag" href="'+element['viaf']+'" target="_blank"><i class="fas fa-external-link"></i>VIAF:'+element['viaf'].split('/').slice(-1)[0]+'</a>\
             <a class="tag" href="'+element['ISBN']+'" target="_blank"><i class="fas fa-external-link"></i>ISBN:'+element['ISBN']+'</a>\

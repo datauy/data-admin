@@ -288,6 +288,12 @@ ul {
     font-family: var(--body-text-general);
     color: var(--grises-gris-01);
     border-radius: 4px;
+    &::placeholder {
+      font-size: var(--body-text-general-size);
+      line-height: 22px;
+      font-family: var(--body-text-general);
+      color: var(--grises-gris-01);
+    }
   }
   input[type="text"]::placeholder {
     color: var(--grises-gris-01);
@@ -308,9 +314,13 @@ ul {
   }
   .ss-main {
     padding: 10px 15px 10px 40px;
-    color: #1f1f1f;
+    color: var(--grises-gris-01);
+    border: 1px solid #C6C6C6;
     .ss-placeholder {
-      color: #1f1f1f;
+      font-size: var(--body-text-general-size);
+      line-height: 22px;
+      font-family: var(--body-text-general);
+      color: var(--grises-gris-01);
     }
   }
   #results {
@@ -498,9 +508,9 @@ ul {
       }
     }
   }
-  .close-right {
-    display: none;
-  }
+}
+.close-right {
+  display: none;
 }
 
 /* Responsiveness */
