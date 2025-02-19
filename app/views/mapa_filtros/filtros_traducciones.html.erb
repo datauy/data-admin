@@ -61,7 +61,7 @@ var currentList = [];
 var autocomplete = {};
 var loading = document.getElementById("loading");
 var noresults = document.getElementById("no-results");
-
+var pseudos = {}
 const langs = {
   'akk': 'Akkadiano',
   'ara': 'Árabe',
@@ -95,12 +95,12 @@ const langs = {
 }
 const filters = {
   'year': {"type": 'inbetween', "default_value": {}, "field": 'Año de publicación', "dom": {'year_max': "Hasta", "year_min": "Período desde"}, "icon": "calendar", "filter": "inbetween", 'parent_dom': "filters-right-2"},
-  'city': {"type": 'autocomplete', "default_value": [], "field":'Ciudad de publicación', "dom": 'city', "values": [], "label": 'Ciudad', "icon": "location", "filter": "include", 'parent_dom': "filters-right-1"},
-  'ente': {"type": 'autocomplete', "default_value": [], "field":'Ente editor', "dom": 'ente', "values": [], "label": 'Ente editor', "icon": "building", "filter": "include", 'parent_dom': "filters-right-1"},
-  'lengua': {"type": 'autocomplete', "default_value": [], "field":'Lengua', "dom": 'lengua', "values": [], "label": 'Lengua fuente', "icon": "lengua", "filter": "include", 'parent_dom': "filters-right-1"},
-  'trans': {"type": 'autocomplete', "default_value": [], "field": "Traductor/a", "dom": "trans", "values": [], "label": "Traductor/a", "icon": "person", "filter": "include", 'parent_dom': "filters-right-1"},
-  'titulo': {"type": 'autocomplete', "default_value": [], "field": 'titulo', "dom": 'titulo', "values": [], "label": "Título", "icon": "title", "filter": "include", 'parent_dom': "filters-right-1"},
-  'aut': {"type": 'autocomplete', "default_value": [], "field":'aut_principal', "dom": 'aut', "values": [], "label": "Autor/a", "icon": "book-person", "filter": "include", "placeholder": "Autor/a", 'parent_dom': "filters-right-1"},
+  'city': {"type": 'autocomplete', "default_value": [], "field":['Ciudad de publicación'], "dom": 'city', "values": [], "label": 'Ciudad', "icon": "location", "filter": "include", 'parent_dom': "filters-right-1"},
+  'ente': {"type": 'autocomplete', "default_value": [], "field":['Ente editor'], "dom": 'ente', "values": [], "label": 'Ente editor', "icon": "building", "filter": "include", 'parent_dom': "filters-right-1"},
+  'lengua': {"type": 'autocomplete', "default_value": [], "field":['Lengua'], "dom": 'lengua', "values": [], "label": 'Lengua fuente', "icon": "lengua", "filter": "include", 'parent_dom': "filters-right-1"},
+  'trans': {"type": 'autocomplete', "default_value": [], "field": ["Traductor/a"], "dom": "trans", "values": [], "label": "Traductor/a", "icon": "person", "filter": "include", 'parent_dom': "filters-right-1"},
+  'titulo': {"type": 'autocomplete', "default_value": [], "field": ['titulo'], "dom": 'titulo', "values": [], "label": "Título", "icon": "title", "filter": "include", 'parent_dom': "filters-right-1"},
+  'aut': {"type": 'autocomplete', "default_value": [], "field":['aut_principal','pseudo'], "dom": 'aut', "values": [], "label": "Autor/a", "icon": "book-person", "filter": "parent_include", "placeholder": "Autor/a", 'parent_dom': "filters-right-1"},
   'search_res': {"type": 'text', "default_value": '', "field":[], "dom": 'search-res', "label": "Buscar por autor/a, traductor/a, título, ISBN, VIAF u otros términos", "icon": "magnifying-glass", "filter": "search", 'parent_dom': "filters-left" },
 }
 function filters_type(ftypes) {
@@ -371,15 +371,33 @@ function reloadFilters() {
         case 'include':
           if ( active_filters[key].length > 0 ) {
             include = false
-            let vals = element[filters[key].field].toString().split('|')
-            console.log(vals);
-            
+            let loc_include
+            let vals = []
+            filters[key].field.forEach(field => {
+              if ( element[field] != null ) {
+                vals = vals.concat(element[field].toString().split('|'))
+              }
+            });
             vals.forEach(ele => {
               ele.trim()
               if ( active_filters[key].includes(ele) ) {
                 include = true;
               }
             });
+            if ( !include ) return
+          }
+          break;
+        case 'parent_include':
+          if ( active_filters[key].length > 0 ) {
+            include = false
+            let base = filters[key].field[1]
+            active_filters[key].forEach(filter => {
+              let pseudo = pseudos[filter]
+              if ( element[base] != null && element[base].toString().split('|').includes(pseudo) ) {
+                include = true
+              }
+            });
+            if ( !include ) return
           }
           break;
         case 'between':
@@ -449,6 +467,7 @@ function render_filter_tags() {
     switch (filters[key].filter) {
       case 'attribute':
       case 'include':
+      case 'parent_include':
         if ( filters[key].type != 'autocomplete' ) {
           if ( filters[key].type == 'list' ) {
             if ( active_filters[key].length > 0 ) {
@@ -511,6 +530,7 @@ function remove_search_tag(key, pos) {
   switch (filters[key].filter) {
     case 'attribute':
     case 'include':
+    case 'parent_include':
       if ( filters[key].type == 'list' ) {
         document.getElementById(filters[key].dom+'-option-'+pos).classList.remove("active");
       }
@@ -591,11 +611,24 @@ function filter(field, fvalue) {
         list += elementListHtml(element, i);
         //Load filters lists if initial load
         if ( initial ) {
-        filter_lists.forEach( filter_list => {
-          if ( !filter_list.values.includes(element[filter_list.field]) ) {
-            filter_list.values.push(element[filter_list.field]);
-          }
-        });
+          filter_lists.forEach( filter_list => {
+            if ( filter_list.filter == 'parent_include' ) {
+              let pseudo_field = filter_list.field[1]
+              let base = filter_list.field[0]
+              let base_value = element[base]
+              pseudos[base_value] = element[pseudo_field]
+              if ( element[base] != null && !filter_list.values.includes(element[base]) ) {
+                filter_list.values.push(element[base]);
+              }
+            }
+            else {
+              filter_list.field.forEach(field => {
+                if ( element[field] != null && !filter_list.values.includes(element[field]) ) {
+                  filter_list.values.push(element[field]);
+                }
+              });
+            }
+          });
         }
       });
       list += '</ul>';
