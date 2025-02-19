@@ -390,13 +390,24 @@ function reloadFilters() {
         case 'parent_include':
           if ( active_filters[key].length > 0 ) {
             include = false
-            let base = filters[key].field[1]
+            let base = filters[key].field[0]
+            let parent = filters[key].field[1]
             active_filters[key].forEach(filter => {
               let pseudo = pseudos[filter]
-              if ( element[base] != null && element[base].toString().split('|').includes(pseudo) ) {
+              //Check both columns
+              if ( element[base] != null && element[base].toString().split('|').includes(filter) ) {
                 include = true
               }
-            });
+              if ( element[parent] != null ) {
+                let vals = element[parent].toString().split('|')
+                pseudo.split('|').forEach( pseudo_el => {
+                  if ( vals.includes(pseudo_el) ) {
+                    console.log(pseudo_el)
+                    include = true
+                  }
+                })
+              }
+            })
             if ( !include ) return
           }
           break;
